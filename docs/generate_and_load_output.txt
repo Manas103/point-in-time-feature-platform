@@ -1,0 +1,5 @@
+instruments=500 events_per_instrument=24000 total_events=12000000
+generate: 11.68s
+iceberg append: 1.08s  snapshot_id=2773258827874287015
+csv export: 7.53s -> /home/manas/build/ptf_data_final/events.csv
+SNAPSHOT_ID=2773258827874287015

@@ -1,0 +1,10 @@
+=== 40 seeded lookahead-leak scenarios ===
+correct backward-only join:  0 / 40 leaked (want 0)
+naive nearest-match join:    40 / 40 leaked (must be >0, or the scenarios are vacuous)
+-> correct join caught/prevented 40 of 40 seeded lookahead leaks
+
+=== 40 clean (unambiguous, non-adversarial) scenarios ===
+correct backward-only join: 0 / 40 falsely flagged (want 0)
+naive nearest-match join:   0 / 40 falsely flagged (want 0)
+
+PASS

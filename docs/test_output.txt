@@ -1,0 +1,25 @@
+============================= test session starts ==============================
+platform linux -- Python 3.10.12, pytest-9.1.1, pluggy-1.6.0 -- /home/manas/build/ptf_test_venv/bin/python
+cachedir: .pytest_cache
+rootdir: /mnt/c/Users/Manas/Downloads/Auto Job Applier/Total Job Application process flow
+configfile: pytest.ini
+collecting ... collected 16 items
+
+tests/test_asof.py::test_exact_match_included_backward PASSED            [  6%]
+tests/test_asof.py::test_query_before_any_event_has_no_match PASSED      [ 12%]
+tests/test_asof.py::test_naive_nearest_can_pick_a_future_event PASSED    [ 18%]
+tests/test_batch_pandas.py::test_rolling_sum_hand_computed PASSED        [ 25%]
+tests/test_batch_pandas.py::test_shuffled_input_gives_identical_result PASSED [ 31%]
+tests/test_batch_pandas.py::test_output_is_integer_for_sum_agg PASSED    [ 37%]
+tests/test_feature_spec.py::test_version_is_stable_for_identical_definitions PASSED [ 43%]
+tests/test_feature_spec.py::test_version_changes_with_any_field PASSED   [ 50%]
+tests/test_feature_spec.py::test_rejects_unsupported_agg PASSED          [ 56%]
+tests/test_feature_spec.py::test_rejects_nonpositive_window PASSED       [ 62%]
+tests/test_feature_spec.py::test_frozen PASSED                           [ 68%]
+tests/test_leak_check.py::test_correct_join_catches_all_40_seeded_leak_scenarios PASSED [ 75%]
+tests/test_leak_check.py::test_zero_false_positives_on_clean_scenarios PASSED [ 81%]
+tests/test_streaming_flink.py::test_to_flink_sql_reads_spec_fields_not_hardcoded PASSED [ 87%]
+tests/test_streaming_flink.py::test_to_flink_sql_changes_with_spec PASSED [ 93%]
+tests/test_training_set.py::test_pinned_snapshot_survives_later_appends PASSED [100%]
+
+============================== 16 passed in 1.65s ==============================

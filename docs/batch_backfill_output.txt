@@ -1,0 +1,4 @@
+rows=12000000 feature_version=a55d85485a62d332 snapshot_id=2773258827874287015
+iceberg scan: 0.20s
+batch compute: 8.87s
+csv write: 6.25s -> /home/manas/build/ptf_data_final/batch_output.csv

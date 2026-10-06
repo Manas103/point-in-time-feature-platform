@@ -1,0 +1,44 @@
+# Runs the PyFlink streaming Table API job (scripts/run_streaming.py) as a
+# Kubernetes Job. This is a plain batch Job running a PyFlink mini-cluster
+# in-process inside one pod, not a Flink-operator-managed FlinkDeployment --
+# that keeps the manifest valid against a stock Kubernetes API server with
+# no extra CRDs installed, which is what let it be validated client-side in
+# this environment (see README, Honest framing and Limitations: no cluster
+# was available here to actually schedule it).
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ptf-streaming-job
+  labels:
+    app: point-in-time-feature-platform
+    component: streaming
+spec:
+  backoffLimit: 0
+  template:
+    metadata:
+      labels:
+        app: point-in-time-feature-platform
+        component: streaming
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: ptf-streaming
+          image: point-in-time-feature-platform:latest
+          command: ["python", "scripts/run_streaming.py"]
+          args:
+            - "/data/events.csv"
+            - "/data/stream_sink"
+          volumeMounts:
+            - name: ptf-data
+              mountPath: /data
+          resources:
+            requests:
+              cpu: "1"
+              memory: "1Gi"
+            limits:
+              cpu: "2"
+              memory: "2Gi"
+      volumes:
+        - name: ptf-data
+          persistentVolumeClaim:
+            claimName: ptf-events-pvc

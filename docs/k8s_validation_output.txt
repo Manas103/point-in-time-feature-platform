@@ -1,0 +1,7 @@
+=== kubectl apply --dry-run=client (no cluster available in this environment) ===
+E1006 02:25:08.449877   56020 memcache.go:265] "Unhandled Error" err="couldn't get current server API group list: Get \"http://localhost:8080/api?timeout=32s\": dial tcp [::1]:8080: connectex: No connection could be made because the target machine actively refused it."
+error: unable to recognize "k8s/streaming-job.yaml": Get "http://localhost:8080/api?timeout=32s": dial tcp [::1]:8080: connectex: No connection could be made because the target machine actively refused it.
+
+=== plain YAML syntax check (no cluster needed) ===
+valid YAML, top-level keys: ['apiVersion', 'kind', 'metadata', 'spec']
+kind: Job apiVersion: batch/v1

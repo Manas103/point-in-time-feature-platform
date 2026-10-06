@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+venv/
+.venv/
+.venv-wsl/
+*.egg-info/
+
+# Generated data, a warehouse, and sink files. Regenerate with:
+#   python scripts/generate_and_load.py <warehouse_dir> <events_csv>
+#   python scripts/run_batch_backfill.py <warehouse_dir> <snapshot_id> <out_csv>
+#   python scripts/run_streaming.py <events_csv> <sink_dir>
+data/
+*.csv
+warehouse/
+stream_sink/

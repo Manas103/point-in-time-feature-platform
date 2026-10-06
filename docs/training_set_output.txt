@@ -1,0 +1,8 @@
+snapshot_1=8968150426089439338  feature_version=8886fa248b289b51  value=90
+appended batch_2 -> snapshot_2=4167290069063132038
+rebuilt against pinned snapshot_1=8968150426089439338: value=90
+rebuilt against new snapshot_2=4167290069063132038: value=90
+
+pinned snapshot reproduces identical value after later appends: True
+new snapshot still respects point-in-time correctness for this query: True
+PASS

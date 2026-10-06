@@ -1,0 +1,6 @@
+stream rows: 12000000  batch rows: 12000000
+total compared keys: 12000000
+unmatched keys (present in only one side): 0
+matched keys with different feature values: 0
+exact matches: 12000000 / 12000000
+PASS: streaming and batch outputs matched row for row across 12000000 feature values.

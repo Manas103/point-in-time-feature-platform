@@ -1,0 +1,2 @@
+feature_version=a55d85485a62d332
+flink streaming job elapsed: 31.24s -> /home/manas/build/ptf_data_final/stream_sink

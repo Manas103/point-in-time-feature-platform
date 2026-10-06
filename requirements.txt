@@ -1,0 +1,5 @@
+apache-flink==2.3.0
+pyiceberg[sql-sqlite]==0.12.0
+pyarrow>=19
+pandas
+pytest
