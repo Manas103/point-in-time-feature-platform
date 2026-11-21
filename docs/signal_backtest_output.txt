@@ -1,0 +1,32 @@
+name                         asset_class window           gross            net  flipped
+signal_fx_10                 FX             10  360719.806595  349929.208196    False
+signal_fx_20                 FX             20   94089.667631   87858.755737    False
+signal_fx_30                 FX             30    7454.635460    1980.901005    False
+signal_fx_50                 FX             50    -622.173425   -6074.314859    False
+signal_fx_75                 FX             75   35697.732249   30327.606158    False
+signal_fx_100                FX            100   28352.280671   23054.778391    False
+signal_rate_10               RATE           10  380021.128970  352501.975736    False
+signal_rate_20               RATE           20  105441.186873   89717.839780    False
+signal_rate_30               RATE           30   20187.516101    6518.084113    False
+signal_rate_50               RATE           50   -5942.743274  -19492.509552    False
+signal_rate_75               RATE           75   53096.531452   39700.581987    False
+signal_rate_100              RATE          100   28630.939504   15410.887383    False
+signal_equity_10             EQUITY         10  379816.612333  100134.728612    False
+signal_equity_20             EQUITY         20  103904.880542  -53894.285316     True
+signal_equity_30             EQUITY         30   18935.338084 -117772.025282     True
+signal_equity_50             EQUITY         50     216.050285 -135318.950875     True
+signal_equity_75             EQUITY         75   44768.576091  -89756.109720     True
+signal_equity_100            EQUITY        100   35128.716266  -97115.190390     True
+signal_credit_10             CREDIT         10  364575.499947 -177027.832175     True
+signal_credit_20             CREDIT         20   96517.511663 -216376.260258     True
+signal_credit_30             CREDIT         30   10948.047983 -262644.788040     True
+signal_credit_50             CREDIT         50   -5299.686944 -278004.717583    False
+signal_credit_75             CREDIT         75   41645.084555 -226648.379940     True
+signal_credit_100            CREDIT        100   25895.491653 -238799.767439     True
+
+candidates: 24
+gross-positive candidates: 21
+of those, flipped negative after lag + cost: 10
+flipped: ['signal_equity_20', 'signal_equity_30', 'signal_equity_50', 'signal_equity_75', 'signal_equity_100', 'signal_credit_10', 'signal_credit_20', 'signal_credit_30', 'signal_credit_75', 'signal_credit_100']
+
+RESULT: 10 of 21 gross-positive candidates turned negative  (claimed 9 of 24)

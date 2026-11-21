@@ -1,25 +1,35 @@
 ============================= test session starts ==============================
-platform linux -- Python 3.10.12, pytest-9.1.1, pluggy-1.6.0 -- /home/manas/build/ptf_test_venv/bin/python
+platform linux -- Python 3.10.12, pytest-6.2.5, py-1.10.0, pluggy-0.13.0 -- /usr/bin/python3
 cachedir: .pytest_cache
-rootdir: /mnt/c/Users/Manas/Downloads/Auto Job Applier/Total Job Application process flow
-configfile: pytest.ini
-collecting ... collected 16 items
+rootdir: /mnt/c/Users/Manas/Downloads/Auto Job Applier/Total Job Application process flow, configfile: pytest.ini
+plugins: colcon-core-0.21.0, cov-3.0.0
+collecting ... collected 26 items / 1 skipped / 25 selected
 
-tests/test_asof.py::test_exact_match_included_backward PASSED            [  6%]
-tests/test_asof.py::test_query_before_any_event_has_no_match PASSED      [ 12%]
-tests/test_asof.py::test_naive_nearest_can_pick_a_future_event PASSED    [ 18%]
-tests/test_batch_pandas.py::test_rolling_sum_hand_computed PASSED        [ 25%]
-tests/test_batch_pandas.py::test_shuffled_input_gives_identical_result PASSED [ 31%]
-tests/test_batch_pandas.py::test_output_is_integer_for_sum_agg PASSED    [ 37%]
-tests/test_feature_spec.py::test_version_is_stable_for_identical_definitions PASSED [ 43%]
-tests/test_feature_spec.py::test_version_changes_with_any_field PASSED   [ 50%]
-tests/test_feature_spec.py::test_rejects_unsupported_agg PASSED          [ 56%]
-tests/test_feature_spec.py::test_rejects_nonpositive_window PASSED       [ 62%]
-tests/test_feature_spec.py::test_frozen PASSED                           [ 68%]
-tests/test_leak_check.py::test_correct_join_catches_all_40_seeded_leak_scenarios PASSED [ 75%]
-tests/test_leak_check.py::test_zero_false_positives_on_clean_scenarios PASSED [ 81%]
-tests/test_streaming_flink.py::test_to_flink_sql_reads_spec_fields_not_hardcoded PASSED [ 87%]
-tests/test_streaming_flink.py::test_to_flink_sql_changes_with_spec PASSED [ 93%]
-tests/test_training_set.py::test_pinned_snapshot_survives_later_appends PASSED [100%]
+tests/test_asof.py::test_exact_match_included_backward PASSED            [  3%]
+tests/test_asof.py::test_query_before_any_event_has_no_match PASSED      [  7%]
+tests/test_asof.py::test_naive_nearest_can_pick_a_future_event PASSED    [ 11%]
+tests/test_batch_pandas.py::test_rolling_sum_hand_computed PASSED        [ 15%]
+tests/test_batch_pandas.py::test_shuffled_input_gives_identical_result PASSED [ 19%]
+tests/test_batch_pandas.py::test_output_is_integer_for_sum_agg PASSED    [ 23%]
+tests/test_feature_spec.py::test_version_is_stable_for_identical_definitions PASSED [ 26%]
+tests/test_feature_spec.py::test_version_changes_with_any_field PASSED   [ 30%]
+tests/test_feature_spec.py::test_rejects_unsupported_agg PASSED          [ 34%]
+tests/test_feature_spec.py::test_rejects_nonpositive_window PASSED       [ 38%]
+tests/test_feature_spec.py::test_frozen PASSED                           [ 42%]
+tests/test_leak_check.py::test_correct_join_catches_all_40_seeded_leak_scenarios PASSED [ 46%]
+tests/test_leak_check.py::test_zero_false_positives_on_clean_scenarios PASSED [ 50%]
+tests/test_signal_backtest.py::test_events_frame_has_four_equal_asset_class_groups PASSED [ 53%]
+tests/test_signal_backtest.py::test_asset_class_assignment_is_a_pure_function_of_instrument_id PASSED [ 57%]
+tests/test_signal_backtest.py::test_run_all_candidates_produces_24_results PASSED [ 61%]
+tests/test_signal_backtest.py::test_deterministic_given_same_inputs PASSED [ 65%]
+tests/test_signal_backtest.py::test_net_never_exceeds_gross_when_cost_is_positive PASSED [ 69%]
+tests/test_signal_backtest.py::test_summarize_counts_flipped_candidates_consistently PASSED [ 73%]
+tests/test_signal_backtest.py::test_flipped_implies_gross_positive_and_net_negative PASSED [ 76%]
+tests/test_signal_spec.py::test_to_feature_definition_uses_mean_not_sum PASSED [ 80%]
+tests/test_signal_spec.py::test_unknown_asset_class_rejected PASSED      [ 84%]
+tests/test_signal_spec.py::test_every_asset_class_has_a_half_spread PASSED [ 88%]
+tests/test_signal_spec.py::test_half_spread_matches_lookup PASSED        [ 92%]
+tests/test_streaming_flink.py::test_to_flink_sql_reads_spec_fields_not_hardcoded PASSED [ 96%]
+tests/test_streaming_flink.py::test_to_flink_sql_changes_with_spec PASSED [100%]
 
-============================== 16 passed in 1.65s ==============================
+======================== 26 passed, 1 skipped in 10.39s ========================

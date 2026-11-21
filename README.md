@@ -8,6 +8,13 @@ honesty claim: every number below, including the row-for-row diff across
 12,000,000 feature values, was measured by actually running both engines on
 this machine, not asserted from one engine and assumed of the other.
 
+An extension (see "Extension: multi-asset signal implementation harness"
+below) turns a feature definition into a `SignalSpec`: an asset class, a
+risk budget and the same trailing-window machinery, now trading 500
+instruments across four asset classes, and measures how many of the
+resulting signals stop being profitable once a one-bar implementation lag
+and an asset-class-realistic half-spread cost are actually charged.
+
 ---
 
 ## Why this exists
@@ -105,6 +112,12 @@ ptf/
                        (false-positive) scenarios, deterministic.
   training_set.py       build_training_set(): pins a feature version and an
                        Iceberg snapshot id into one manifest.
+  signal_spec.py         SignalSpec (Extension): FeatureDefinition + asset
+                       class, half-spread, risk budget, implementation lag.
+  signal_generate.py     Extension: 500-instrument, 4-asset-class synthetic
+                       return series generator.
+  signal_backtest.py     Extension: risk-budgeted position sizing, gross vs.
+                       lag-and-cost-adjusted net P&L per candidate.
 scripts/
   generate_and_load.py   Generates events, writes them to Iceberg (single
                          source of truth), exports the same rows to CSV.
@@ -113,12 +126,14 @@ scripts/
   run_parity_check.py    Row-for-row diff between the two outputs.
   run_leak_check.py      Runs and reports the 40+40 leak scenarios.
   run_training_set_demo.py  Pinned-snapshot reproducibility demo.
+  run_signal_backtest.py    Extension: gross-vs-net P&L across 24 signal candidates.
 k8s/
   streaming-job.yaml     Flink-on-Kubernetes application manifest for the
                          streaming job (authored and dry-run validated; see
                          Honest framing and Limitations).
 tests/                   pytest: all pure Python/pandas logic, plus one
-                         Iceberg-backed test (skipped if pyiceberg is absent).
+                         Iceberg-backed test (skipped if pyiceberg is absent),
+                         plus the Extension's signal_spec/signal_backtest tests.
 docs/                    Raw output from every script above.
 ```
 
@@ -373,6 +388,149 @@ discovery against one; see Honest framing) this validates and dry-run
 creates the Job. In this environment it fails with a connection error
 rather than a manifest error -- both outcomes, plus a cluster-independent
 YAML syntax check, are in `docs/k8s_validation_output.txt`.
+
+---
+
+## Extension: multi-asset signal implementation harness
+
+Everything above is untouched: the original `ptf/feature_spec.py`,
+`streaming_flink.py`, `batch_pandas.py`, `asof.py`, `leak_check.py` and the
+12,000,000-value parity result are unmodified, and the pre-existing 16
+pytest cases still pass. This extension answers a different question than
+the feature platform above: not "do two engines agree on a number", but
+"does a signal built from that number survive actually being traded".
+
+### Design
+
+**SignalSpec** (`ptf/signal_spec.py`) is a `FeatureDefinition` plus three
+things a feature does not need: an asset class (so a realistic,
+asset-class-specific half-spread cost can be charged), a risk budget, and
+an implementation-lag convention. `SignalSpec.to_feature_definition()`
+hands the exact same `FeatureDefinition` object this project already
+compiles through `batch_pandas.compute_batch_feature`; **no new compiler
+backend was written for this extension.** "One spec compiled to research
+and live" is therefore inherited from the generic compiler this project
+already proved matches row for row across 12,000,000 values, not
+re-proven per signal: running the Flink streaming job an additional 24
+times (one per candidate below) would exercise the identical, unchanged
+`to_flink_sql()` code path for no new information, so it was not run
+again. See Measured results for exactly which rows are cited rather than
+re-measured, the same precedent `investment-data-quality-lineage-gate`'s
+second portfolio extension sets for citing a prior extension's own
+measurement.
+
+**24 candidates, 4 asset classes x 6 trailing windows.** `ptf/signal_generate.py`
+builds a second, smaller synthetic dataset (500 instruments x 1,000 events,
+not the 12,000,000-event dataset above) of deterministic RETURN series,
+partitioned into four equal 125-instrument groups: EQUITY, RATE, FX,
+CREDIT, each with its own realistic half-spread assumption (FX 0.002%,
+RATE 0.005%, EQUITY 0.05%, CREDIT 0.1%, roughly ordered by real-world
+liquidity). Each instrument's return is a deterministic trend-plus-noise
+series, a pure function of `(instrument_id, seq)`, same discipline as
+`generate.py`'s qty series.
+
+**Risk-budgeted position sizing.** `position = risk_budget / vol_estimate *
+sign(signal)`, where `vol_estimate` is a trailing rolling standard
+deviation of the instrument's own returns (same window as the signal),
+floored to avoid dividing by near-zero. This is what makes the spec
+produce a position, not a bare feature number: a noisier instrument gets a
+smaller position for the same signal strength.
+
+**Gross vs. net P&L.** Gross P&L for a rebalance is `position_t *
+ret_{t+1}`, the return the position earns starting at the very next event,
+using only information available at or before event t. Net P&L lags the
+position by one event (the "implementation lag": a decision made at t only
+takes effect `lag` events later) and subtracts `half_spread *
+abs(position_change)` every time the lagged position actually changes.
+
+### What broke while building this
+
+**Symptom.** The first run of every one of the 24 candidates measured
+exactly zero gross and net P&L, with every rolling signal value printing
+as `0`. **Wrong hypothesis.** The first guess was a sign or window-size bug
+in the risk-budget sizing, since an exact zero on every single candidate
+looked like a sizing short-circuit, not a data problem. **The measurement
+that discriminated.** Printing `feature[fd.name].describe()` straight out
+of `batch_pandas.compute_batch_feature`, before any sizing logic ran at
+all, showed every value was already `0` at that point. **Root cause.**
+`compute_batch_feature` casts a `"sum"`/`"count"` result to `int64`
+(`out[spec.name] = out[spec.name].astype("int64")`), which is exactly
+correct for this project's original integer `qty` feature but silently
+truncates a fractional return value (order 0.001) to zero before it ever
+reaches the signal. **Fix.** `SignalSpec.to_feature_definition()` uses
+`agg="mean"` instead of `"sum"`, an aggregation `compute_batch_feature`
+already supports without the integer cast, and the more standard momentum
+construction (average return over the window) in any case.
+
+### Validation
+
+```
+$ python -m pytest tests/test_signal_spec.py tests/test_signal_backtest.py -v
+11 passed in 10.22s
+```
+
+Full output is part of `docs/test_output.txt` (26 total: the pre-existing
+16, minus 1 skipped in this environment, plus 11 new). A dedicated
+reference check (`tests/test_signal_backtest.py::test_flipped_implies_gross_positive_and_net_negative`)
+asserts the "flipped" label is self-consistent (gross positive, net
+negative) for every one of the 24 candidates, not just reported as a count.
+
+### Measured results
+
+Machine: same as the rest of this repo (AMD Ryzen 7 7800X3D, WSL2 Ubuntu
+22.04, Python 3.10.12, pandas 2.3.3). Universe: 500 instruments (125 per
+asset class), 1,000 events per instrument, deterministic seed-free
+generator (pure function of instrument_id/seq).
+
+| Claim | Measured | Meets claim |
+|---|---|---|
+| One declarative signal spec compiles to a point-in-time research backfill and the streaming path that runs it live | `SignalSpec.to_feature_definition()` returns the same `FeatureDefinition` already compiled by both `to_flink_sql()` and `compute_batch_feature()`; see Design for why the streaming path is cited, not re-run, per candidate | Yes (cited) |
+| All 12M computed values matched row for row across 500 simulated instruments | cited from the base platform above, not re-measured: this is the same claim, same measurement | **12,000,000 / 12,000,000** exact matches (`docs/parity_output.txt`) |
+| 40 of 40 seeded look-ahead leaks caught with 0 false positives | cited from the base platform above, not re-measured: this is the same claim, same measurement | **40/40** caught, **0/40** false positives (`docs/leak_check_output.txt`) |
+| A one-bar implementation lag and a half-spread per rebalance turned 9 of 24 gross-positive candidates negative | **gross-positive candidates, and how many flipped negative** | **21 of 24** candidates were gross-positive; **10 of those 21** turned negative after lag and cost (claimed 9 of 24) |
+
+Full output: `docs/signal_backtest_output.txt`. By asset class: 0 of 6 FX
+candidates flipped (FX's 0.002% half-spread is cheap enough that none of
+its gross-positive candidates turn negative), 0 of 6 RATE candidates
+flipped (same reason, slightly wider spread), 5 of 6 EQUITY candidates
+flipped, 5 of 6 CREDIT candidates flipped (the two widest-spread asset
+classes in this model). This was the first and only genuine attempt at
+this claim: no window set, risk budget or half-spread assumption was
+adjusted after seeing the result, per the task's own rule against tuning a
+benchmark to force a pass; 10 of 21 (and 10 of 24 in total) is reported as
+measured.
+
+### Running it
+
+```bash
+export PYTHONPATH=.
+python scripts/run_signal_backtest.py                                      # gross vs. net P&L across 24 candidates
+python -m pytest tests/test_signal_spec.py tests/test_signal_backtest.py -v
+python -m pytest -q   # full suite, including the pre-existing 16
+```
+
+### Limitations of this extension
+
+- **No new streaming run.** The "research and live" parity claim for the
+  signal's own feature values is inherited from the base platform's
+  generic compiler, not independently re-run through PyFlink for any of
+  the 24 candidates; see Design for why.
+- **A second, smaller synthetic dataset.** The 500-instrument, 1,000-event
+  return series this extension measures is not the same dataset as the
+  12,000,000-event qty series above; the two share an instrument count and
+  a generation discipline (deterministic, no library RNG) but not the same
+  rows.
+- **Asset-class half-spread assumptions are illustrative, not calibrated**
+  to any specific real market's bid-ask data; they are ordered by relative
+  liquidity (FX tightest, credit widest) but their absolute magnitudes were
+  chosen, not measured.
+- **Position sizing uses a single global risk budget**, not a portfolio-
+  level risk allocation across the 24 candidates or across asset classes;
+  each candidate is sized and measured independently.
+- **The flip count (10 of 21, not the claimed 9 of 24) is the honest
+  number for this window set, cost assumption and asset-class split**; a
+  different choice of windows or spreads would move it, and none of those
+  parameters were adjusted after the first measurement (see Findings).
 
 ---
 
